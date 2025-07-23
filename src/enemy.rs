@@ -23,6 +23,12 @@ impl Update for Square {
 impl Draw for Square {
     fn draw(self: &Square) {
         let apothem: f32 = self.body.get_size() / 2.0;
-        draw_circle(self.body.get_x(), self.body.get_y(), apothem, self.color);
+        draw_rectangle(
+            self.body.get_x(),
+            self.body.get_y(),
+            apothem,
+            apothem,
+            self.color,
+        );
     }
 }
