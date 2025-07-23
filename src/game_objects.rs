@@ -1,10 +1,7 @@
 use macroquad::prelude::*;
 
-pub trait Access_Modifiers {
-    fn get_x_coord() -> f32;
-    fn get_y_coord() -> f32;
-    fn set_x_coord(distance: f32) -> f32;
-    fn set_y_coord(distance: f32) -> f32;
+pub trait Draw {
+    fn draw(&self) {}
 }
 
 pub trait Update {
@@ -49,27 +46,31 @@ impl Shape {
         self.speed
     }
 
-    pub fn get_collided(&self) -> f32 {
+    pub fn get_collided(&self) -> bool {
         self.collided
     }
 
-    pub fn set_collided(&self, was_collision: bool) {
+    pub fn get_size(&self) -> f32 {
+        self.size
+    }
+
+    pub fn set_collided(&mut self, was_collision: bool) {
         self.collided = was_collision;
     }
 
-    pub fn set_x(&self, distance: f32) {
+    pub fn set_x(&mut self, distance: f32) {
         self.x += distance
     }
 
-    pub fn set_y(&self, distance: f32) {
+    pub fn set_y(&mut self, distance: f32) {
         self.y += distance
     }
 
-    pub fn get_x(&self) {
+    pub fn get_x(&self) -> f32 {
         self.x
     }
 
-    pub fn get_y(&self) {
+    pub fn get_y(&self) -> f32 {
         self.y
     }
 }
