@@ -5,8 +5,8 @@ mod player;
 mod score;
 mod settings;
 
-use crate::bullet::{Bullet, init_bullet};
-use crate::enemy::{Square, init_square};
+use crate::bullet::{init_bullet, Bullet};
+use crate::enemy::{init_square, Square};
 use crate::game_objects::{Body, Draw, Update};
 use crate::player::init_circle;
 use crate::score::init_score_tracker;
@@ -110,11 +110,14 @@ async fn main() {
 
         // deleting squares from screen, and repositioning circle
         if game_over && is_key_pressed(KeyCode::Space) {
+            game_over = false;
             squares.clear();
             bullets.clear();
             circle.reset(center);
+            if score_tracker.get_current_score() > score_tracker.get_high_score() {
+                score_tracker.set_high_score(score_tracker.get_current_score());
+            }
             score_tracker.set_current_score(0);
-            game_over = false;
         }
 
         // Drawing everything
