@@ -1,33 +1,31 @@
-use macroquad::prelude::*;
+mod bullet;
+mod enemy;
 mod game_objects;
 mod player;
+mod score;
 mod settings;
+
+use crate::bullet::init_bullet;
+use crate::game_objects::{init_shape, Body, Draw, Shape};
+use crate::player::init_circle;
+use macroquad::prelude::*;
 use std::fs;
 
-struct Square {
-    inner: Shape,
-}
-
-impl Update for Square {
-    fn update(self: &mut Square, dt: f32) {}
-}
+use crate::{enemy::init_square, game_objects::Update};
 
 // This macro is used to tell macroquad which function will be run
 // when the application starts
 #[macroquad::main("My game")]
 async fn main() {
     rand::srand(miniquad::date::now as u64);
-    let mut score: u32 = 0;
-    let mut high_score: u32 = fs::read_to_string("highscore.dat")
-        .map_or(Ok(0), |i| i.parse::<u32>())
-        .unwrap_or(0);
+
     let center = (screen_width() / 2.0, screen_height() / 2.0);
 
     let mut circle_body = init_shape(32., 200., center);
     let mut circle = init_circle(circle_body, YELLOW);
 
     let mut squares = vec![];
-    let mut bullets: Vec<Shape> = vec![];
+    let mut bullets = vec![];
 
     // Determines how quickly the circle should move
     let mut game_over = false;
@@ -43,31 +41,19 @@ async fn main() {
 
             // Creating new bullets:
             if is_key_pressed(KeyCode::Space) {
-                bullets.push(Shape {
-                    x: circle.x,
-                    y: circle.y,
-                    speed: circle.speed * 2.0,
-                    size: 5.0,
-                    collided: false,
-                });
+                bullets.push(init_bullet(circle.body(), RED));
             }
 
             // using rand::gen_range() to determine whether to add a new
             // square.
             if rand::gen_range(0, 99) >= 95 {
                 let size = rand::gen_range(16.0, 64.0);
-                squares.push(Shape {
-                    size,
-                    speed: rand::gen_range(50.0, 150.0),
-                    x: rand::gen_range(size / 2.0, screen_width() - size / 2.0),
-                    y: -size,
-                    collided: false,
-                });
+                squares.push(init_square(GREEN));
             }
 
             // Updating squares location
             for square in &mut squares {
-                square.y += square.speed * delta_time;
+                square.update(delta_time);
             }
             // Updating bullet location
             for bullet in &mut bullets {
@@ -84,7 +70,10 @@ async fn main() {
         }
 
         // Checking if the circle has collided with any squares
-        if squares.iter().any(|square| circle.collides_with(square)) {
+        if squares
+            .iter()
+            .any(|square| circle.body.collides_with(square.body))
+        {
             if score == high_score {
                 fs::write("highscore.dat", high_score.to_string()).ok();
             }
@@ -107,51 +96,24 @@ async fn main() {
         if game_over && is_key_pressed(KeyCode::Space) {
             squares.clear();
             bullets.clear();
-            circle.x = screen_width() / 2.0;
-            circle.y = screen_height() / 2.0;
+            circle = screen_width() / 2.0;
+            circle = screen_height() / 2.0;
             score = 0;
             game_over = false;
         }
 
         // Drawing everything
-        draw_circle(circle.x, circle.y, circle.size / 2.0, YELLOW);
+
         for square in &squares {
-            draw_rectangle(
-                square.x - square.size / 2.0,
-                square.y - square.size / 2.0,
-                square.size,
-                square.size,
-                GREEN,
-            );
+            square.draw();
         }
 
         for bullet in &bullets {
             draw_circle(bullet.x, bullet.y, bullet.size, RED);
         }
 
-        draw_text(format!("Score: {score}").as_str(), 10.0, 35.0, 25.0, WHITE);
-        let highscore_text = format!("High score: {high_score}");
-        let text_dimensions = measure_text(highscore_text.as_str(), None, 25, 1.0);
-        draw_text(
-            highscore_text.as_str(),
-            screen_width() - text_dimensions.width - 10.0,
-            35.0,
-            25.0,
-            WHITE,
-        );
-
         // printing game over message
-        if game_over {
-            let text = "GAME OVER!";
-            let text_dimensions = measure_text(text, None, 50, 1.0);
-            draw_text(
-                text,
-                screen_width() / 2.0 - text_dimensions.width / 2.0,
-                screen_height() / 2.0,
-                50.0,
-                RED,
-            );
-        }
+        if game_over {}
 
         next_frame().await
     }
