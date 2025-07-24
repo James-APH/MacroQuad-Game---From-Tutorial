@@ -20,6 +20,7 @@ pub fn init_bullet(parent_body: &Shape, color_type: Color) -> Bullet {
 impl Update for Bullet {
     fn update(self: &mut Bullet, dt: f32) {
         let distance = self.body.get_speed() * dt;
+        self.body.set_y(-distance);
     }
 }
 
@@ -27,5 +28,11 @@ impl Draw for Bullet {
     fn draw(self: &Bullet) {
         let radius: f32 = self.body.get_size() / 2.0;
         draw_circle(self.body.get_x(), self.body.get_y(), radius, self.color);
+    }
+}
+
+impl Body for Bullet {
+    fn body(self: &Bullet) -> &Shape {
+        &self.body
     }
 }

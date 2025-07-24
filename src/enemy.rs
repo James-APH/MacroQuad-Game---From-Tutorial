@@ -36,3 +36,9 @@ impl Draw for Square {
         );
     }
 }
+
+impl Body for Square {
+    fn body(self: &Square) -> &Shape {
+        &self.body
+    }
+}
