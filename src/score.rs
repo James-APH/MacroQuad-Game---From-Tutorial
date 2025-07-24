@@ -1,13 +1,13 @@
 use macroquad::prelude::*;
 use std::fs;
 
-pub struct Score {
+pub struct ScoreTracker {
     current_score: u32,
     high_score: u32,
 }
 
-pub fn init_score(score_save_file: &str) -> Score {
-    Score {
+pub fn init_score_tracker(score_save_file: &str) -> ScoreTracker {
+    ScoreTracker {
         current_score: 0,
         high_score: fs::read_to_string(score_save_file)
             .map_or(Ok(0), |i| i.parse::<u32>())
@@ -15,20 +15,24 @@ pub fn init_score(score_save_file: &str) -> Score {
     }
 }
 
-impl Score {
-    fn get_current_score(&self) -> u32 {
+impl ScoreTracker {
+    pub fn get_current_score(&self) -> u32 {
         self.current_score
     }
 
-    fn get_high_score(&self) -> u32 {
+    pub fn get_high_score(&self) -> u32 {
         self.high_score
     }
 
-    fn set_current_score(&self, new_score: u32) {}
+    pub fn set_current_score(&mut self, new_score: u32) {
+        self.current_score = new_score;
+    }
 
-    fn set_high_score(&self, new_high_score: u32) {}
+    pub fn set_high_score(&mut self, new_high_score: u32) {
+        self.high_score = new_high_score;
+    }
 
-    fn draw(&self) {
+    pub fn draw(&self) {
         draw_text(
             format!("Score: {}", self.get_current_score()).as_str(),
             10.0,
@@ -47,5 +51,9 @@ impl Score {
         );
     }
 
-    fn save(&self) {}
+    pub fn save(&self) {
+        if self.current_score > self.high_score {
+            fs::write("highscore.dat", self.current_score.to_string()).ok();
+        }
+    }
 }
