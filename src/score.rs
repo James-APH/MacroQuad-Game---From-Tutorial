@@ -28,10 +28,6 @@ impl ScoreTracker {
         self.current_score = new_score;
     }
 
-    pub fn set_high_score(&mut self, new_high_score: u32) {
-        self.high_score = new_high_score;
-    }
-
     pub fn draw(&self) {
         draw_text(
             format!("Score: {}", self.get_current_score()).as_str(),
