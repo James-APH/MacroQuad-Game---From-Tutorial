@@ -1,8 +1,8 @@
 use macroquad::prelude::*;
 
-pub trait Body {
-    fn get_body(&self) -> &Shape;
-    fn get_body_mut(&mut self) -> &mut Shape;
+pub trait GetBody {
+    fn get_body(&self) -> &Body;
+    fn get_body_mut(&mut self) -> &mut Body;
 }
 
 pub trait Draw {
@@ -13,7 +13,7 @@ pub trait Update {
     fn update(&mut self, dt: f32);
 }
 
-pub struct Shape {
+pub struct Body {
     size: f32,
     speed: f32,
     x: f32,
@@ -21,8 +21,8 @@ pub struct Shape {
     collided: bool,
 }
 
-pub fn init_shape(body_size: f32, body_speed: f32, body_coords: (f32, f32)) -> Shape {
-    Shape {
+pub fn init_body(body_size: f32, body_speed: f32, body_coords: (f32, f32)) -> Body {
+    Body {
         size: body_size,
         speed: body_speed,
         x: body_coords.0,
@@ -31,7 +31,7 @@ pub fn init_shape(body_size: f32, body_speed: f32, body_coords: (f32, f32)) -> S
     }
 }
 
-impl Shape {
+impl Body {
     pub fn collides_with(&self, other: &Self) -> bool {
         self.rect().overlaps(&other.rect())
     }

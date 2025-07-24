@@ -5,10 +5,10 @@ mod player;
 mod score;
 mod settings;
 
-use crate::bullet::{init_bullet, Bullet};
-use crate::enemy::{init_square, Square};
-use crate::game_objects::{Body, Draw, Update};
-use crate::player::init_circle;
+use crate::bullet::{Bullet, init_bullet};
+use crate::enemy::{Enemy, init_enemy};
+use crate::game_objects::{Draw, GetBody, Update};
+use crate::player::init_player;
 use crate::score::init_score_tracker;
 use macroquad::prelude::*;
 
@@ -21,10 +21,10 @@ async fn main() {
     let mut score_tracker = init_score_tracker(score_save_file);
     let center = (screen_width() / 2.0, screen_height() / 2.0);
 
-    let mut circle = init_circle(center, YELLOW);
+    let mut player = init_player(center, YELLOW);
     let background_color = BLACK;
 
-    let mut squares = vec![];
+    let mut enemies = vec![];
     let mut bullets = vec![];
 
     let mut game_over = false;
@@ -44,22 +44,22 @@ async fn main() {
 
         if !game_over {
             let delta_time = get_frame_time();
-            circle.update(delta_time);
+            player.update(delta_time);
 
             // Creating new bullets:
             if is_key_pressed(KeyCode::Space) {
-                let bullet: Bullet = init_bullet(circle.get_body(), RED);
+                let bullet: Bullet = init_bullet(player.get_body(), RED);
                 bullets.push(bullet);
             }
 
             if rand::gen_range(0, 99) >= 95 {
-                let square: Square = init_square(GREEN);
-                squares.push(square);
+                let enemy: Enemy = init_enemy(GREEN);
+                enemies.push(enemy);
             }
 
             // Updating squares location
-            for square in &mut squares {
-                square.update(delta_time);
+            for enemy in &mut enemies {
+                enemy.update(delta_time);
             }
             // Updating bullet location
             for bullet in &mut bullets {
@@ -67,53 +67,47 @@ async fn main() {
             }
 
             // deciding whether to keep a square on the screen depending on where its coords are
-            squares.retain(|square| {
-                square.get_body().get_y() < screen_height() + square.get_body().get_size()
+            enemies.retain(|enemy| {
+                enemy.get_body().get_y() < screen_height() + enemy.get_body().get_size()
             });
 
             // deciding whether to keep squares / bullets on the screen
             // if they've collided with eachother
             bullets.retain(|bullet| !bullet.get_body().get_collided());
-            squares.retain(|square| !square.get_body().get_collided());
+            enemies.retain(|enemy| !enemy.get_body().get_collided());
         }
 
         // Checking if the circle has collided with any squares
 
-        if squares
+        if enemies
             .iter()
-            .any(|square| circle.get_body().collides_with(square.get_body()))
+            .any(|enemy| player.get_body().collides_with(enemy.get_body()))
         {
             score_tracker.save();
             game_over = true;
         }
 
         // Checking if bullets have collided with any squares
-        for square in squares.iter_mut() {
+        for enemy in enemies.iter_mut() {
             for bullet in bullets.iter_mut() {
-                if bullet.get_body().collides_with(square.get_body()) {
+                if bullet.get_body().collides_with(enemy.get_body()) {
                     let was_collided = true;
                     bullet.get_body_mut().set_collided(was_collided);
-                    square.get_body_mut().set_collided(was_collided);
+                    enemy.get_body_mut().set_collided(was_collided);
                     score_tracker.set_current_score(
                         score_tracker.get_current_score()
-                            + square.get_body().get_size().round() as u32,
+                            + enemy.get_body().get_size().round() as u32,
                     );
                 }
             }
         }
 
-        //
-        //
-        // DEBUG:
-        //
-        //
-
         // deleting squares from screen, and repositioning circle
         if game_over && is_key_pressed(KeyCode::Space) {
             game_over = false;
-            squares.clear();
+            enemies.clear();
             bullets.clear();
-            circle.reset(center);
+            player.reset(center);
             if score_tracker.get_current_score() > score_tracker.get_high_score() {
                 score_tracker.set_high_score(score_tracker.get_current_score());
             }
@@ -122,8 +116,8 @@ async fn main() {
 
         // Drawing everything
 
-        for square in &squares {
-            square.draw();
+        for enemy in &enemies {
+            enemy.draw();
         }
 
         for bullet in &bullets {
@@ -131,7 +125,7 @@ async fn main() {
         }
 
         score_tracker.draw();
-        circle.draw();
+        player.draw();
 
         next_frame().await
     }

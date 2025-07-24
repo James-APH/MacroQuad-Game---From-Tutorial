@@ -2,13 +2,13 @@ use crate::game_objects::*;
 use macroquad::prelude::*;
 
 pub struct Bullet {
-    body: Shape,
+    body: Body,
     color: Color,
 }
 
-pub fn init_bullet(parent_body: &Shape, color_type: Color) -> Bullet {
+pub fn init_bullet(parent_body: &Body, color_type: Color) -> Bullet {
     Bullet {
-        body: init_shape(
+        body: init_body(
             parent_body.get_size() / 2.0,
             parent_body.get_speed(),
             (parent_body.get_x(), parent_body.get_y()),
@@ -31,12 +31,12 @@ impl Draw for Bullet {
     }
 }
 
-impl Body for Bullet {
-    fn get_body(self: &Bullet) -> &Shape {
+impl GetBody for Bullet {
+    fn get_body(self: &Bullet) -> &Body {
         &self.body
     }
 
-    fn get_body_mut(self: &mut Bullet) -> &mut Shape {
+    fn get_body_mut(self: &mut Bullet) -> &mut Body {
         &mut self.body
     }
 }

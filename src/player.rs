@@ -1,22 +1,22 @@
 use crate::game_objects::*;
 use macroquad::prelude::*;
 
-pub struct Circle {
-    body: Shape,
+pub struct Player {
+    body: Body,
     color: Color,
 }
 
 /// Constructor for circle
-pub fn init_circle(coords: (f32, f32), color_type: Color) -> Circle {
-    Circle {
-        body: init_shape(32., 200., coords),
+pub fn init_player(coords: (f32, f32), color_type: Color) -> Player {
+    Player {
+        body: init_body(32., 200., coords),
         color: color_type,
     }
 }
 
 /// Fuction to update circles position
-impl Update for Circle {
-    fn update(self: &mut Circle, dt: f32) {
+impl Update for Player {
+    fn update(self: &mut Player, dt: f32) {
         let distance = self.body.get_speed() * dt;
         if is_key_down(KeyCode::Right) {
             self.body.set_x(self.body.get_x() + distance);
@@ -40,30 +40,25 @@ impl Update for Circle {
 }
 
 /// Function to draw circle to the screen
-impl Draw for Circle {
-    fn draw(self: &Circle) {
+impl Draw for Player {
+    fn draw(self: &Player) {
         let radius: f32 = self.body.get_size() / 2.0;
-        println!(
-            "Drawing player at ({}, {})",
-            self.body.get_x(),
-            self.body.get_y()
-        );
         draw_circle(self.body.get_x(), self.body.get_y(), radius, self.color);
     }
 }
 
-impl Body for Circle {
-    fn get_body(self: &Circle) -> &Shape {
+impl GetBody for Player {
+    fn get_body(self: &Player) -> &Body {
         &self.body
     }
 
-    fn get_body_mut(self: &mut Circle) -> &mut Shape {
+    fn get_body_mut(self: &mut Player) -> &mut Body {
         &mut self.body
     }
 }
 
-impl Circle {
-    pub fn reset(self: &mut Circle, coords: (f32, f32)) {
+impl Player {
+    pub fn reset(self: &mut Player, coords: (f32, f32)) {
         self.body.set_x(coords.0);
         self.body.set_y(coords.1);
     }
