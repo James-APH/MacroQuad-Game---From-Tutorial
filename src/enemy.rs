@@ -6,9 +6,13 @@ struct Square {
     color: Color,
 }
 
-pub fn init_square(shape_body: Shape, color_type: Color) -> Square {
+pub fn init_square(color_type: Color) -> Square {
+    let size = rand::gen_range(16.0, 64.0);
+    let speed = rand::gen_range(50.0, 150.0);
+    let x = rand::gen_range(size / 2.0, screen_width() - size / 2.0);
+    let y = -size;
     Square {
-        body: shape_body,
+        body: init_shape(size, speed, (x, y)),
         color: color_type,
     }
 }
