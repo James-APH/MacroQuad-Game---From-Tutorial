@@ -5,24 +5,22 @@ mod player;
 mod score;
 mod settings;
 
-use crate::bullet::init_bullet;
-use crate::game_objects::{init_shape, Body, Draw, Shape};
+use crate::bullet::{Bullet, init_bullet};
+use crate::enemy::{Square, init_square};
+use crate::game_objects::{Body, Draw, Update};
 use crate::player::init_circle;
+use crate::score::init_score_tracker;
 use macroquad::prelude::*;
-use std::fs;
-
-use crate::{enemy::init_square, game_objects::Update};
 
 // This macro is used to tell macroquad which function will be run
 // when the application starts
 #[macroquad::main("My game")]
 async fn main() {
     rand::srand(miniquad::date::now as u64);
-
+    let mut score_tracker = init_score_tracker("highscore.dat");
     let center = (screen_width() / 2.0, screen_height() / 2.0);
 
-    let mut circle_body = init_shape(32., 200., center);
-    let mut circle = init_circle(circle_body, YELLOW);
+    let mut circle = init_circle(center, YELLOW);
 
     let mut squares = vec![];
     let mut bullets = vec![];
@@ -41,14 +39,15 @@ async fn main() {
 
             // Creating new bullets:
             if is_key_pressed(KeyCode::Space) {
-                bullets.push(init_bullet(circle.body(), RED));
+                let bullet: Bullet = init_bullet(circle.get_body(), RED);
+                bullets.push(bullet);
             }
 
             // using rand::gen_range() to determine whether to add a new
             // square.
             if rand::gen_range(0, 99) >= 95 {
-                let size = rand::gen_range(16.0, 64.0);
-                squares.push(init_square(GREEN));
+                let square: Square = init_square(GREEN);
+                squares.push(square);
             }
 
             // Updating squares location
@@ -57,37 +56,40 @@ async fn main() {
             }
             // Updating bullet location
             for bullet in &mut bullets {
-                bullet.y -= bullet.speed * delta_time
+                bullet.update(delta_time);
             }
 
             // deciding whether to keep a square on the screen depending on where its coords are
-            squares.retain(|square| square.y < screen_height() + square.size);
+            squares.retain(|square| {
+                square.get_body().get_y() < screen_height() + square.get_body().get_size()
+            });
 
             // deciding whether to keep squares / bullets on the screen
             // if they've collided with eachother
-            bullets.retain(|bullet| !bullet.collided);
-            squares.retain(|square| !square.collided);
+            bullets.retain(|bullet| !bullet.get_body().get_collided());
+            squares.retain(|square| !square.get_body().get_collided());
         }
 
         // Checking if the circle has collided with any squares
         if squares
             .iter()
-            .any(|square| circle.body.collides_with(square.body))
+            .any(|square| circle.get_body().collides_with(square.get_body()))
         {
-            if score == high_score {
-                fs::write("highscore.dat", high_score.to_string()).ok();
-            }
+            score_tracker.save();
             game_over = true;
         }
 
         // Checking if bullets have collided with any squares
         for square in squares.iter_mut() {
             for bullet in bullets.iter_mut() {
-                if bullet.collides_with(square) {
-                    bullet.collided = true;
-                    square.collided = true;
-                    score += square.size.round() as u32;
-                    high_score = high_score.max(score);
+                if bullet.get_body().collides_with(square.get_body()) {
+                    let was_collided = true;
+                    bullet.get_body_mut().set_collided(was_collided);
+                    square.get_body_mut().set_collided(was_collided);
+                    score_tracker.set_current_score(
+                        score_tracker.get_current_score()
+                            + square.get_body().get_size().round() as u32,
+                    );
                 }
             }
         }
@@ -96,20 +98,20 @@ async fn main() {
         if game_over && is_key_pressed(KeyCode::Space) {
             squares.clear();
             bullets.clear();
-            circle = screen_width() / 2.0;
-            circle = screen_height() / 2.0;
-            score = 0;
+            circle.reset(center);
+            score_tracker.set_current_score(0);
             game_over = false;
         }
 
         // Drawing everything
+        circle.draw();
 
         for square in &squares {
             square.draw();
         }
 
         for bullet in &bullets {
-            draw_circle(bullet.x, bullet.y, bullet.size, RED);
+            bullet.draw();
         }
 
         // printing game over message
