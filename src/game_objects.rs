@@ -1,11 +1,12 @@
 use macroquad::prelude::*;
 
 pub trait Body {
-    fn body(&self) -> &Shape;
+    fn get_body(&self) -> &Shape;
+    fn get_body_mut(&mut self) -> &mut Shape;
 }
 
 pub trait Draw {
-    fn draw(&self) {}
+    fn draw(&self);
 }
 
 pub trait Update {
@@ -63,11 +64,11 @@ impl Shape {
     }
 
     pub fn set_x(&mut self, distance: f32) {
-        self.x += distance
+        self.x = distance
     }
 
     pub fn set_y(&mut self, distance: f32) {
-        self.y += distance
+        self.y = distance
     }
 
     pub fn get_x(&self) -> f32 {
