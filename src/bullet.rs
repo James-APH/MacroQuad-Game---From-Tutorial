@@ -6,9 +6,13 @@ pub struct Bullet {
     color: Color,
 }
 
-pub fn init_bullet(shape_body: Shape, color_type: Color) -> Bullet {
+pub fn init_bullet(parent_body: &Shape, color_type: Color) -> Bullet {
     Bullet {
-        body: shape_body,
+        body: init_shape(
+            parent_body.get_size() / 2.0,
+            parent_body.get_speed(),
+            (parent_body.get_x(), parent_body.get_y()),
+        ),
         color: color_type,
     }
 }
