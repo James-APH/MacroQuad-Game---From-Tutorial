@@ -16,24 +16,33 @@ use macroquad::prelude::*;
 // when the application starts
 #[macroquad::main("My game")]
 async fn main() {
-    rand::srand(miniquad::date::now as u64);
-    let mut score_tracker = init_score_tracker("highscore.dat");
+    let score_save_file: &str = "highscore.dat";
+
+    let mut score_tracker = init_score_tracker(score_save_file);
     let center = (screen_width() / 2.0, screen_height() / 2.0);
 
     let mut circle = init_circle(center, YELLOW);
+    let background_color = BLACK;
 
     let mut squares = vec![];
     let mut bullets = vec![];
 
-    // Determines how quickly the circle should move
     let mut game_over = false;
 
+    rand::srand(miniquad::date::now as u64);
     loop {
+        clear_background(background_color);
+
+        //
+        //
+        // DEBUG
+        //
+        //
+
         // even if clear_background() is not used explicitly, the screen
         // will be cleared with black at the start of each frame.
-        clear_background(DARKBLUE);
+
         if !game_over {
-            // gets the t8ime in seconds that has passed since the last frame
             let delta_time = get_frame_time();
             circle.update(delta_time);
 
@@ -43,8 +52,6 @@ async fn main() {
                 bullets.push(bullet);
             }
 
-            // using rand::gen_range() to determine whether to add a new
-            // square.
             if rand::gen_range(0, 99) >= 95 {
                 let square: Square = init_square(GREEN);
                 squares.push(square);
@@ -71,6 +78,7 @@ async fn main() {
         }
 
         // Checking if the circle has collided with any squares
+
         if squares
             .iter()
             .any(|square| circle.get_body().collides_with(square.get_body()))
@@ -94,6 +102,12 @@ async fn main() {
             }
         }
 
+        //
+        //
+        // DEBUG:
+        //
+        //
+
         // deleting squares from screen, and repositioning circle
         if game_over && is_key_pressed(KeyCode::Space) {
             squares.clear();
@@ -104,7 +118,6 @@ async fn main() {
         }
 
         // Drawing everything
-        circle.draw();
 
         for square in &squares {
             square.draw();
@@ -114,8 +127,8 @@ async fn main() {
             bullet.draw();
         }
 
-        // printing game over message
-        if game_over {}
+        score_tracker.draw();
+        circle.draw();
 
         next_frame().await
     }
