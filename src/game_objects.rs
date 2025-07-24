@@ -1,5 +1,9 @@
 use macroquad::prelude::*;
 
+pub trait Body {
+    fn body(&self) -> &Shape;
+}
+
 pub trait Draw {
     fn draw(&self) {}
 }
