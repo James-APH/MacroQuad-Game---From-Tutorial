@@ -46,3 +46,9 @@ impl Draw for Circle {
         draw_circle(self.body.get_x(), self.body.get_y(), radius, self.color);
     }
 }
+
+impl Body for Circle {
+    fn body(self: &Circle) -> &Shape {
+        &self.body
+    }
+}
