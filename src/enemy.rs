@@ -1,7 +1,7 @@
 use crate::game_objects::*;
 use macroquad::prelude::*;
 
-struct Square {
+pub struct Square {
     body: Shape,
     color: Color,
 }
@@ -20,25 +20,29 @@ pub fn init_square(color_type: Color) -> Square {
 impl Update for Square {
     fn update(self: &mut Square, dt: f32) {
         let distance = self.body.get_speed() * dt;
-        self.body.set_y(distance);
+        self.body.set_y(self.body.get_y() + distance);
     }
 }
 
 impl Draw for Square {
     fn draw(self: &Square) {
-        let apothem: f32 = self.body.get_size() / 2.0;
+        let width: f32 = self.body.get_size();
         draw_rectangle(
             self.body.get_x(),
             self.body.get_y(),
-            apothem,
-            apothem,
+            width,
+            width,
             self.color,
         );
     }
 }
 
 impl Body for Square {
-    fn body(self: &Square) -> &Shape {
+    fn get_body(self: &Square) -> &Shape {
         &self.body
+    }
+
+    fn get_body_mut(self: &mut Square) -> &mut Shape {
+        &mut self.body
     }
 }
